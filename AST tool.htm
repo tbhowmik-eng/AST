@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automation Suitability Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: practitioner toolkit, plain and step-by-step, for light rail agency staff.
+   IDEA: the proposal's AST figure made live: navy step bars, orange step numbers.
+   PICTURE: page 1 walks through the four steps; page 2 is the worksheet with a live outcome card.
+   COLOUR and TYPE: navy 0E3A5C dominant, orange A65300 accent, green/amber/grey status; Public Sans, 18px body.
+   LAYOUT: navy header, two page tabs, guide page then evaluation page. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0f151b);--ink:light-dark(#1d232a,#eef2f6);--mute:light-dark(#55606b,#a9b4bf);
+--soft:light-dark(#f2f2f2,#1a222b);--line:light-dark(#d5d9de,#33404c);
+--navy:#0e3a5c;--nav:light-dark(#0e3a5c,#8fbbe0);--org:#a65300;--orgi:light-dark(#a65300,#f2a466);--orgt:light-dark(#fbe5d6,#3a2514);
+--pass:light-dark(#375623,#9fd27f);--passt:light-dark(#e2efda,#1c2c15);
+--warn:light-dark(#7f5f00,#f0c95a);--warnt:light-dark(#fff2cc,#352b0e);
+--fail:light-dark(#9b1c1c,#ff9b9b);--failt:light-dark(#fbe4e4,#3d1717)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Public Sans",system-ui,sans-serif;overflow-x:clip}
+html{scroll-padding-top:80px}
+.band{padding:clamp(28px,4vw,52px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+h1,h2,h3{line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,4.6vw,50px);font-weight:800}h2{font-size:clamp(26px,3vw,34px);font-weight:700;margin-bottom:8px}
+h3{font-size:17px;font-weight:700}
+.lede{max-width:70ch;color:var(--mute);margin:6px 0 0}
+header{background:var(--navy);color:#fff}header .lede{color:#d6e3ee}
+.tag{display:inline-block;font-size:15px;font-weight:600;border:1px solid #ffffff66;border-radius:99px;padding:3px 12px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+.stat{background:#ffffff12;border:1px solid #ffffff2e;border-radius:10px;padding:14px 16px}
+.stat b{display:block;font-size:clamp(26px,3.4vw,36px);line-height:1;font-weight:800;color:#f6b27a}
+.stat span{font-size:16px;color:#d6e3ee}
+.proto{font-size:15px;color:#d6e3ee;margin-top:14px}
+.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs .in{display:flex;gap:8px;max-width:1240px;margin:0 auto;padding:8px max(5vw,16px);flex-wrap:wrap}
+.tabs a{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:700;font-size:17px;padding:10px 16px;border-radius:10px;border:2px solid transparent;min-height:48px}
+.tabs a .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--mute);font-size:15px}
+.tabs a[aria-current=page]{border-color:var(--nav);color:var(--nav)}
+.tabs a[aria-current=page] .n{background:var(--org);color:#fff}
+.page[hidden]{display:none}
+.scroll{overflow-x:auto}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:22px;counter-reset:s}
+.fs{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.fs .hd,.step>.hd{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--navy);color:#fff}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--org);color:#fff;font-weight:800;flex:none;border:2px solid #fff}
+.fs .bd{padding:14px 16px}.fs p{margin:0 0 8px}.fs ul{margin:0;padding-left:20px;color:var(--mute)}.fs li{margin:3px 0}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:20px}
+.box{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--bg)}
+.box h3{font-size:19px;margin-bottom:10px}
+.lg{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 14px;align-items:center}
+.lg span:nth-child(even){color:var(--mute)}
+.chip{display:inline-block;font-size:15px;font-weight:700;border-radius:99px;padding:2px 12px;border:1px solid currentColor;white-space:nowrap;text-align:center}
+.c-pass{color:var(--pass);background:var(--passt)}.c-warn{color:var(--warn);background:var(--warnt)}
+.c-fail{color:var(--fail);background:var(--failt)}.c-mute{color:var(--mute);background:var(--soft)}.c-org{color:var(--orgi);background:var(--orgt)}
+.oc4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.oc4 div{border:1px solid var(--line);border-radius:10px;padding:12px 14px}.oc4 b{display:block;color:var(--orgi)}.oc4 p{margin:2px 0 0;color:var(--mute);font-size:16px}
+.soft{background:var(--soft)}
+.tool{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;margin-top:18px;align-items:start}
+.step{background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.step>.bd{padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.loc{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:8px}
+label{display:block;font-size:16px;font-weight:600;color:var(--mute);margin-bottom:4px}
+select,input[type=text]{width:100%;font:17px "Public Sans",sans-serif;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:46px}
+:focus-visible{outline:3px solid var(--orgi);outline-offset:2px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.q p{margin:0}.q small{display:block;color:var(--mute);font-size:15px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{font:600 16px "Public Sans",sans-serif;border:0;border-right:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:44px;min-width:44px;padding:0 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true].p{background:var(--passt);color:var(--pass)}
+.seg button[aria-pressed=true].u{background:var(--warnt);color:var(--warn)}
+.seg button[aria-pressed=true].f{background:var(--failt);color:var(--fail)}
+.seg button[aria-pressed=true].r{background:var(--navy);color:#fff}
+.seg button[aria-pressed=true].i{background:var(--soft);color:var(--mute);font-style:italic}
+.crit{padding:14px 0;border-bottom:1px solid var(--line)}.crit:last-child{border-bottom:0}
+.crit .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.crit .row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin-top:8px}
+.crit input[type=range]{width:100%;accent-color:#a65300;min-height:44px}
+.crit .w{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;min-width:6em;text-align:right}
+.crit select{width:auto;min-height:42px;padding:6px 10px;font-size:16px}
+.out{position:sticky;top:84px}
+.res{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.res .bd{padding:16px}
+.res .big{font-size:clamp(26px,3vw,32px);font-weight:800;line-height:1.1;color:var(--orgi);margin:0 0 10px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 14px}
+.opts span{font-size:15px;font-weight:600;text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px 6px;color:var(--mute)}
+.opts span.on{background:var(--org);color:#fff;border-color:var(--org)}
+.meter{height:14px;background:var(--soft);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--navy);width:0;transition:width .3s}
+@media(prefers-reduced-motion:reduce){.meter i{transition:none}}
+.kv{display:flex;justify-content:space-between;gap:10px;margin:6px 0}
+.kv b{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--nav)}
+.why{margin:12px 0 0;padding-left:20px}.why li{margin:3px 0}
+.memo{margin-top:14px;border:1px solid var(--nav);border-radius:10px;padding:14px;font-size:16.5px;line-height:1.5}
+.memo h3{font-size:15px;color:var(--nav);margin-bottom:6px}.memo p{margin:4px 0}
+.btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{font:700 17px "Public Sans",sans-serif;min-height:48px;padding:0 18px;border-radius:10px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn.org{background:var(--org);border-color:var(--org)}
+.btn.ghost{background:transparent;color:var(--nav);border-color:var(--nav)}
+.note{font-size:15px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;margin-top:16px}
+th{text-align:left;font-size:16px;color:var(--mute);border-bottom:2px solid var(--line);padding:8px}
+td{border-bottom:1px solid var(--line);padding:10px 8px;vertical-align:top}
+.cases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.case{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.case p{margin:0;color:var(--mute)}.case .btn{margin-top:auto}
+footer{border-top:1px solid var(--line);color:var(--mute)}
+@media(max-width:1000px){.tool,.two{grid-template-columns:minmax(0,1fr)}.out{position:static}.flow,.cases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){body{font-size:17px}.stats,.flow,.cases,.grid2,.oc4,.loc{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr)}
+.crit .row{grid-template-columns:minmax(0,1fr)}.crit .w{text-align:left}
+table{font-size:15px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;font-weight:600;color:var(--mute)}.stack td:empty{display:none}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="band"><div class="wrap">
+  <span class="tag">Automation Suitability Tool (prototype)</span>
+  <h1>Is light rail automation worth a closer look on your system?</h1>
+  <p class="lede">The Automation Suitability Tool (AST) helps an agency check whether a documented need warrants automation, screen an application against essential requirements, weigh its benefits and costs, and leave with a memo-ready recommendation.</p>
+</div></header>
+
+<nav class="tabs" aria-label="Pages"><div class="in">
+  <a href="#guide" data-page="guide"><span class="n">1</span>How to use the tool</a>
+  <a href="#evaluate" data-page="evaluate"><span class="n">2</span>Evaluate an application</a>
+</div></nav>
+
+<main>
+<div class="page" id="p-guide">
+<section class="band"><div class="wrap">
+  <h2>Four steps from a documented need to a recommendation</h2>
+  <p class="lede">Work through the steps in order on the next page. Each one takes a few minutes and uses information most agencies already have.</p>
+  <div class="flow">
+    <div class="fs"><div class="hd"><span class="num">1</span><h3>Define need and context</h3></div><div class="bd"><p>Describe the problem and where it occurs.</p><ul><li>Documented need, such as incident history</li><li>Application under consideration</li><li>Location and operating environment</li><li>Countermeasures already in place</li></ul></div></div>
+    <div class="fs"><div class="hd"><span class="num">2</span><h3>Screen feasibility</h3></div><div class="bd"><p>Answer four yes-or-no style questions.</p><ul><li>Is there a demonstrated need?</li><li>Do simpler alternatives fall short?</li><li>Does it fit the operating conditions?</li><li>Is there a pathway to approvals?</li></ul></div></div>
+    <div class="fs"><div class="hd"><span class="num">3</span><h3>Compare benefits and costs</h3></div><div class="bd"><p>Rate five criteria from 1 to 5.</p><ul><li>Higher is always more favorable</li><li>Adjust weights to local priorities</li><li>Label each rating's evidence</li><li>Mark missing data as Insufficient</li></ul></div></div>
+    <div class="fs"><div class="hd"><span class="num">4</span><h3>Decide next steps</h3></div><div class="bd"><p>Read the outcome and share the memo.</p><ul><li>One of four outcomes</li><li>Reasons behind the result</li><li>Recommended next steps</li><li>Memo for leadership and boards</li></ul></div></div>
+  </div>
+</div></section>
+
+<section class="band soft"><div class="wrap">
+  <h2>Reading the results</h2>
+  <div class="two">
+    <div class="box"><h3>Screening answers and evidence labels</h3><div class="lg">
+      <span class="chip c-pass">Pass</span><span>The requirement is met.</span>
+      <span class="chip c-warn">Unresolved</span><span>Needs to be verified. The application still moves forward, flagged.</span>
+      <span class="chip c-fail">Not met</span><span>No need, or an essential requirement fails.</span>
+      <span class="chip c-pass">Documented</span><span>Rating based on records, data, or evaluations.</span>
+      <span class="chip c-org">Judgment</span><span>Rating based on staff or stakeholder judgment.</span>
+      <span class="chip c-mute">Insufficient</span><span>Not enough information. Flagged, never scored.</span>
+    </div></div>
+    <div class="box"><h3>The four outcomes</h3><div class="oc4">
+      <div><b>Further feasibility analysis</b><p>Strong potential; proceed to detailed engineering, cost, and approval studies.</p></div>
+      <div><b>Pilot consideration</b><p>Promising, but evidence from comparable settings is limited; pilot with defined measures.</p></div>
+      <div><b>Additional information needed</b><p>Key items are unresolved; the tool lists what to obtain.</p></div>
+      <div><b>Longer-term monitoring</b><p>Depends on further technology, regulatory, or institutional developments.</p></div>
+    </div>
+    <p class="note">If screening finds no need, the result is <b>Not warranted at this time</b>. If an essential requirement fails, the application is <b>Set aside</b>.</p></div>
+  </div>
+  <p class="lede">When cost or other information is missing, the score is labeled <b>partial</b> and shows the share of criterion weight assessed. Changing weights never offsets an unresolved requirement.</p>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>Try an example</h2>
+  <p class="lede">Four hypothetical evaluations, one for each kind of result. Loading one opens it on the evaluation page.</p>
+  <div class="cases" id="cases"></div>
+</div></section>
+
+<section class="band soft"><div class="wrap">
+  <h2>Application library</h2>
+  <p class="lede">Where each application fits and its preliminary timeframe. Entries are illustrative and will be replaced by the research findings.</p>
+  <div class="scroll"><table class="stack"><thead><tr><th>Application</th><th>Suited environments</th><th>Deployment status</th><th>Timeframe</th><th>Key considerations</th><th></th></tr></thead><tbody id="lib"></tbody></table></div>
+  <div class="btns"><a class="btn org" href="#evaluate">Start an evaluation</a></div>
+</div></section>
+</div>
+
+<div class="page" id="p-evaluate" hidden>
+<section class="band"><div class="wrap">
+  <h2>Evaluate an application</h2>
+  <p class="lede">Loaded with the hypothetical obstacle-detection example. Change any input and the outcome and memo update.</p>
+  <div class="btns"><a class="btn ghost" href="#guide">How to use the tool</a><button class="btn ghost" type="button" id="reset">Clear inputs</button></div>
+  <div class="tool">
+    <div>
+      <div class="step"><div class="hd"><span class="num">1</span><h3>Define need and operating context</h3></div><div class="bd">
+        <div class="grid2">
+          <div><label for="app">Automation application</label><select id="app"></select></div>
+          <div><label for="env">Operating environment</label><select id="env"></select></div>
+          <div style="grid-column:1/-1"><label for="level">Location evaluated</label><div class="loc"><select id="level" aria-label="Evaluation level"><option>Segment</option><option>Station</option><option>Depot or yard</option><option>Vehicle fleet</option><option>System</option></select><input type="text" id="loc" aria-label="Location name (optional)" placeholder="Name (optional), e.g. Downtown street-running"></div></div>
+          <div><label for="need">Documented need</label><input type="text" id="need"></div>
+          <div><label for="counter">Existing countermeasures</label><input type="text" id="counter"></div>
+        </div>
+        <p class="note" id="envhint"></p>
+      </div></div>
+      <div class="step"><div class="hd"><span class="num">2</span><h3>Initial feasibility screening</h3></div><div class="bd" id="screen"></div></div>
+      <div class="step"><div class="hd"><span class="num">3</span><h3>Comparative assessment</h3></div><div class="bd">
+        <div id="crit"></div><p class="note">Weights are rescaled to sum to 100% across all five criteria.</p>
+      </div></div>
+    </div>
+    <aside class="out" aria-live="polite">
+      <div class="res"><div class="step" style="margin:0;border:0"><div class="hd"><span class="num">4</span><h3>Outcome and memo-ready summary</h3></div></div><div class="bd">
+        <div class="big" id="oc"></div>
+        <div class="opts" id="opts"></div>
+        <div class="kv"><span id="sclab">Partial weighted score</span><b id="score"></b></div>
+        <div class="meter"><i id="bar"></i></div>
+        <div class="kv"><span>Criterion weight assessed</span><b id="cov"></b></div>
+        <p class="note" id="sens"></p>
+        <ul class="why" id="why"></ul>
+        <div class="memo" id="memo"></div>
+        <div class="btns"><button class="btn" type="button" id="copy">Copy memo</button><span class="note" id="copied" role="status"></span></div>
+      </div></div>
+    </aside>
+  </div>
+</div></section>
+</div>
+</main>
+
+<footer class="band soft" id="about"><div class="wrap">
+</div></footer>
+
+<script>
+{
+const APPS=[
+ {id:"od",n:"Obstacle detection and collision warning",env:["mixed","semi"],st:"Revenue service (limited)",tf:"Short-term",k:"False alarms, sensor reliability, integration with vehicles"},
+ {id:"os",n:"Overspeed protection",env:["excl","semi","mixed"],st:"Revenue service",tf:"Short-term",k:"Signaling compatibility, vehicle modifications"},
+ {id:"gc",n:"AI-based grade crossing monitoring",env:["semi","mixed","shared"],st:"Pilot",tf:"Short-term",k:"Camera coverage, data retention, alert response"},
+ {id:"ti",n:"Track intrusion and worker warning",env:["excl","semi","shared","yard"],st:"Pilot",tf:"Medium-term",k:"Detection range, worker procedures, alert fatigue"},
+ {id:"ab",n:"Automated braking assistance",env:["excl","semi"],st:"Demonstration",tf:"Medium-term",k:"Braking reliability, safety approval, passenger comfort"},
+ {id:"ps",n:"Precision stopping and docking",env:["excl","semi","mixed"],st:"Pilot",tf:"Medium-term",k:"Platform design, ADA gap requirements, vehicle retrofit"},
+ {id:"yd",n:"Automated yard and depot movements",env:["yard"],st:"Demonstration",tf:"Medium-term",k:"Depot layout, worker safety zones, labor agreements"},
+ {id:"ato",n:"Higher grades of automated train operation",env:["excl"],st:"Research and international demonstration",tf:"Long-term",k:"Capital cost, safety assurance, institutional readiness"}];
+const ENVS={excl:"Exclusive right-of-way",semi:"Semi-exclusive with gated crossings",mixed:"Mixed traffic or street-running",shared:"Shared track",yard:"Yard or depot"};
+const QS=[
+ {t:"Is there a demonstrated safety or operational need this application could meaningfully address?",s:"Need",need:1},
+ {t:"Do existing practices or less complex alternatives fall short of addressing the need?",s:"Choose Unresolved if alternatives have not been evaluated",need:1},
+ {t:"Is the application compatible with the segment's operating conditions?",s:"Essential requirement"},
+ {t:"Is there a plausible pathway to meeting technical, safety, and regulatory requirements?",s:"Essential requirement"}];
+const CR=["Safety benefit","Operational efficiency and service quality","Technical feasibility","Costs and resources","Organizational readiness"];
+const OUT=["Further feasibility analysis","Pilot consideration","Additional information needed","Longer-term monitoring"];
+const PRE={
+ od:{app:"od",level:"Segment",loc:"Downtown street-running",env:"mixed",need:"Crossing collisions: 14 in 5 years (agency records)",counter:"Signage and signal priority; no onboard sensors",q:["p","p","p","u"],verify:"Vehicle retrofit compatibility and State Safety Oversight review",r:[4,3,3,0,4],w:[25,15,20,20,20],e:["d","j","d","j","j"]},
+ yd:{app:"yd",level:"Depot or yard",loc:"North operations depot",env:"yard",need:"Yard staffing shortfall on night shifts (agency staffing data)",counter:"Manual moves with ground spotters",q:["p","p","p","p"],verify:"",r:[4,4,4,3,3],w:[25,15,20,20,20],e:["j","d","j","j","j"]},
+ ato:{app:"ato",level:"Segment",loc:"Airport branch, grade-separated (4.8 mi)",env:"excl",need:"Peak headway limits on the branch (operations data)",counter:"Manual operation with cab signaling",q:["p","p","p","p"],verify:"",r:[3,4,2,2,2],w:[25,15,20,20,20],e:["j","d","d","j","j"]},
+ gc:{app:"gc",level:"Station",loc:"Elm Street crossing",env:"semi",need:"No crossing incidents recorded in 5 years",counter:"Gates, lights, and bells",q:["f","u","p","p"],verify:"",r:[2,2,4,3,3],w:[25,15,20,20,20],e:["d","j","j","j","j"]}};
+const CASES=[["od","Obstacle detection, downtown street-running","A documented collision problem with unresolved retrofit, oversight, and cost questions."],
+ ["yd","Automated depot movements","A clear staffing need with promising but mostly judgment-based ratings."],
+ ["ato","Automated train operation on a grade-separated branch","Passes screening, but depends on longer-term technological and institutional developments."],
+ ["gc","AI crossing monitoring at a quiet crossing","No documented need, so automation is not warranted at this time."]];
+let S;
+const $=id=>document.getElementById(id);
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const blank=()=>({app:"od",level:"Segment",loc:"",env:"mixed",need:"",counter:"",q:["u","u","u","u"],verify:"",r:[0,0,0,0,0],w:[20,20,20,20,20],e:["j","j","j","j","j"]});
+const clone=o=>JSON.parse(JSON.stringify(o));
+try{S=JSON.parse(localStorage.getItem("ast-a59"))}catch(e){}
+if(!S||!S.q)S=clone(PRE.od);
+
+$("app").innerHTML=APPS.map(a=>`<option value="${a.id}">${a.n}</option>`).join("");
+$("env").innerHTML=Object.entries(ENVS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("lib").innerHTML=APPS.map(a=>`<tr><td><b>${a.n}</b></td><td>${a.env.map(e=>ENVS[e]).join("; ")}</td><td>${a.st}</td><td><span class="chip ${a.tf=="Short-term"?"c-pass":a.tf=="Medium-term"?"c-warn":"c-mute"}">${a.tf}</span></td><td>${a.k}</td><td><button class="btn ghost" type="button" data-ev="${a.id}">Evaluate</button></td></tr>`).join("");
+$("cases").innerHTML=CASES.map(c=>`<div class="case"><h3>${c[1]}</h3><p>${c[2]}</p><button class="btn ghost" type="button" data-case="${c[0]}">Load example</button></div>`).join("");
+
+function drawStatic(){
+ ["app","level","loc","env","need","counter"].forEach(k=>$(k).value=S[k]);
+ $("screen").innerHTML=QS.map((q,i)=>`<div class="q"><p>${q.t}<small>${q.s}</small></p><div class="seg" role="group" aria-label="Screening question ${i+1}">${[["p","Pass"],["u","Unresolved"],["f","Not met"]].map(([v,l])=>`<button type="button" class="${v}" data-q="${i}" data-v="${v}" aria-pressed="${S.q[i]==v}">${l}</button>`).join("")}</div></div>`).join("")+
+ `<div style="margin-top:12px"><label for="verify">Items to verify</label><input type="text" id="verify" value="${esc(S.verify)}"></div>`;
+ $("crit").innerHTML=CR.map((c,i)=>`<div class="crit"><div class="top"><h3>${c}</h3>
+  <select data-e="${i}" aria-label="Evidence for ${c}"><option value="d">Documented</option><option value="j">Judgment</option></select></div>
+  <div class="row"><div class="seg" role="group" aria-label="Rating for ${c}">${[1,2,3,4,5].map(v=>`<button type="button" class="r" data-r="${i}" data-v="${v}" aria-pressed="${S.r[i]==v}">${v}</button>`).join("")}<button type="button" class="i" data-r="${i}" data-v="0" aria-pressed="${S.r[i]==0}">Insufficient</button></div>
+  <input type="range" min="0" max="50" step="5" value="${S.w[i]}" data-w="${i}" aria-label="Weight for ${c}"><span class="w" id="w${i}"></span></div></div>`).join("");
+ document.querySelectorAll("[data-e]").forEach(s=>s.value=S.e[+s.dataset.e]);
+ $("verify").addEventListener("input",e=>{S.verify=e.target.value;update()});
+}
+
+function evaluate(st){
+ const app=APPS.find(a=>a.id==st.app), W=st.w.reduce((a,b)=>a+b,0)||1, wn=st.w.map(x=>x/W);
+ let num=0,den=0,doc=0;
+ st.r.forEach((r,i)=>{if(r>0){num+=r*wn[i];den+=wn[i];if(st.e[i]=="d")doc+=wn[i]}});
+ const score=den?num/den:0, cov=den, insuff=st.r.some(r=>r==0), why=[];
+ let oc, disp=null;
+ if(st.q[0]=="f"||st.q[1]=="f"){disp="Not warranted at this time";why.push(st.q[0]=="f"?"No demonstrated need that this application could meaningfully address.":"Existing practices or less complex alternatives adequately address the need.");}
+ else if(st.q[2]=="f"||st.q[3]=="f"){disp="Set aside";why.push("An essential requirement is not met; the reason is documented for the record.");}
+ else{
+  const unres=st.q.map((v,i)=>v=="u"?i:-1).filter(i=>i>=0);
+  if(unres.length||insuff){oc=2;
+   unres.forEach(i=>why.push("Screening unresolved: "+["need","alternatives","operating compatibility","technical, safety, and regulatory pathway"][i]+"."));
+   st.r.forEach((r,i)=>{if(r==0)why.push(CR[i]+": insufficient information, flagged and not scored.")});}
+  else if(app.tf=="Long-term"){oc=3;why.push("The application depends on further technological, regulatory, or institutional developments.");}
+  else if(score>=3.5&&doc/den>=0.5){oc=0;why.push("Strong ratings, mostly supported by documented evidence.");}
+  else if(score>=3){oc=1;why.push("Promising ratings, but performance in comparable settings is not well documented.");}
+  else{oc=3;why.push("Ratings are not yet favorable enough to justify near-term action.");}
+ }
+ return {app,score,cov,doc,den,oc,disp,why,wn};
+}
+
+function sensitivity(R){
+ if(R.disp)return "";
+ if(R.oc==2)return "Weight changes do not resolve flagged items or missing information.";
+ let changed=false;
+ for(let i=0;i<5&&!changed;i++)for(const d of[-10,10]){const t=clone(S);t.w[i]=Math.max(0,t.w[i]+d);if(evaluate(t).oc!=R.oc){changed=true;break}}
+ return changed?"Sensitivity: the outcome changes under some ±10-point weight shifts. Review weights with stakeholders.":"Sensitivity: the outcome holds under ±10-point shifts in any criterion weight.";
+}
+
+function nextSteps(R){
+ if(R.disp=="Not warranted at this time")return "Continue monitoring the need; revisit if incidents or operating conditions change.";
+ if(R.disp)return "Document the failed requirement and consider alternative applications.";
+ return ["Proceed with detailed engineering, cost, and approval assessments.",
+  "Design a pilot with defined performance measures (for example, near misses, emergency braking events, false alarms).",
+  (S.verify?"Verify "+S.verify.charAt(0).toLowerCase()+S.verify.slice(1):"Resolve the flagged requirements")+(S.r.some(r=>r==0)?"; obtain the missing information (for example, preliminary vendor cost estimates).":"."),
+  "Track technology maturity and peer deployments; re-evaluate in 2 to 3 years."][R.oc];
+}
+
+function update(){
+ const R=evaluate(S), label=R.disp||OUT[R.oc];
+ S.w.forEach((w,i)=>$("w"+i).textContent=Math.round(R.wn[i]*100)+"% weight");
+ const app=R.app, fit=app.env.includes(S.env);
+ $("envhint").textContent=fit?`Library profile: suited to ${ENVS[S.env].toLowerCase()}.`:`Library profile: this application is not typically applied in ${ENVS[S.env].toLowerCase()}. Check screening question 3.`;
+ $("oc").textContent=label;
+ $("opts").innerHTML=OUT.map((o,i)=>`<span class="${!R.disp&&R.oc==i?"on":""}">${o}</span>`).join("");
+ const partial=R.cov<0.999;
+ $("sclab").textContent=partial?"Partial weighted score":"Weighted score";
+ $("score").textContent=R.den?R.score.toFixed(1)+" / 5":"Not scored";
+ $("bar").style.width=(R.den?R.score/5*100:0)+"%";
+ $("cov").textContent=Math.round(R.cov*100)+"%";
+ $("sens").textContent=(partial&&!R.disp?"Based on available information only. ":"")+sensitivity(R);
+ $("why").innerHTML=R.why.map(w=>`<li>${esc(w)}</li>`).join("");
+ const needOK=S.q[0]=="p"&&S.q[1]=="p";
+ const cons=R.disp=="Not warranted at this time"?"Not warranted at this time":needOK?"Warranted for further evaluation":"Need or alternatives still to be confirmed";
+ const suit=R.disp?"Not assessed":R.oc==2?"Potentially suitable, subject to resolving the flagged uncertainties":R.oc==0?"Potentially suitable":R.oc==1?"Potentially suitable; evidence from comparable settings is limited":"Not yet suitable for near-term action";
+ const M=[["Context",`${app.n}; ${S.level}${S.loc?": "+S.loc:""} (${ENVS[S.env].toLowerCase()})`],["Documented need",S.need||"not specified"],["Outcome",label],["Automation consideration",cons],["Application suitability",suit],["Assessment",R.den?`${partial?"Partial weighted score":"Weighted score"} ${R.score.toFixed(1)}/5; ${Math.round(R.cov*100)}% of criterion weight assessed`:"Not scored"],["Next steps",nextSteps(R)]];
+ $("memo").innerHTML="<h3>Evaluation summary</h3>"+M.map(([k,v])=>`<p><b>${k}:</b> ${esc(v)}</p>`).join("");
+ $("memo").dataset.txt="EVALUATION SUMMARY\n"+M.map(([k,v])=>`${k}: ${v}`).join("\n");
+ try{localStorage.setItem("ast-a59",JSON.stringify(S))}catch(e){}
+}
+function load(st){S=clone(st);drawStatic();update()}
+
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.q!==undefined){S.q[+b.dataset.q]=b.dataset.v;b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x==b));update()}
+ else if(b.dataset.r!==undefined){S.r[+b.dataset.r]=+b.dataset.v;b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x==b));update()}
+ else if(b.dataset.case){load(PRE[b.dataset.case]);location.hash="evaluate"}
+ else if(b.dataset.ev){const t=blank();t.app=b.dataset.ev;t.env=APPS.find(a=>a.id==t.app).env[0];load(t);location.hash="evaluate"}
+ else if(b.id=="reset"){load(blank())}
+ else if(b.id=="copy"){const txt=$("memo").dataset.txt;
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>$("copied").textContent="Memo copied.").catch(()=>{const r=document.createRange();r.selectNodeContents($("memo"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("copied").textContent="Memo selected; press Ctrl+C to copy."})}
+});
+document.addEventListener("input",e=>{const t=e.target;
+ if(t.dataset.w!==undefined){S.w[+t.dataset.w]=+t.value;update()}
+ else if(["app","level","loc","env","need","counter"].includes(t.id)){S[t.id]=t.value;update()}});
+document.addEventListener("change",e=>{const t=e.target;
+ if(t.dataset.e!==undefined){S.e[+t.dataset.e]=t.value;update()}
+ else if(["app","level","env"].includes(t.id)){S[t.id]=t.value;update()}});
+drawStatic();update();
+function route(){const p=location.hash=="#evaluate"?"evaluate":"guide";
+ document.querySelectorAll(".page").forEach(x=>x.hidden=x.id!="p-"+p);
+ document.querySelectorAll(".tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.page==p?"page":"false"));
+ window.scrollTo(0,0)}
+addEventListener("hashchange",route);route();
+}
+</script>
+</body>
+</html>
